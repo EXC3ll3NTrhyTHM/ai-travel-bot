@@ -75,6 +75,7 @@ main p{
     display: flex;
     align-items: center;
     gap: 1em;
+    height: 2em;
     
 }
 
@@ -111,6 +112,13 @@ main p{
     background-color: var(--accent-clr);
 }
 
+#sidebar .create-blog-btn-sidebar a{
+    color: white;
+    svg{
+        fill: white;
+    }
+}
+
 #sidebar .add-blog-button{
     background-color: var(--accent-clr);
 }
@@ -144,16 +152,17 @@ main p{
 
 #sidebar.retracted{
     padding:5px;
-    width: 60px;
+    width: 65px;
     overflow: hidden;
 }
 
-#sidebar.retracted .profile{
+#sidebar.retracted a span{
     display: none;
 }
 
-#sidebar.retracted a{
-    height: 3em;
+
+#sidebar.retracted .profile{
+    display: none;
 }
 
 .profile:hover{
@@ -391,7 +400,7 @@ footer {
     }
 
     #sidebar .create-blog-btn-sidebar {
-        display: none;
+        display: none !important;
     }
 
     #sidebar .create-blog-btn-bottombar{
