@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.urls import path
-from chatbot.views import \
-    UserPreferenceListCreateView, \
-    ItineraryListCreateView, \
+from chatbot.views import UserPreferenceListCreateView, ItineraryListCreateView
+from chatbot.services.travel_api import \
     search_hotels_by_city, \
     search_flights, \
     search_hotels_by_geo
