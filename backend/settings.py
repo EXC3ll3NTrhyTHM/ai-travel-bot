@@ -24,7 +24,9 @@ if IS_DEVELOPMENT:
 
 AMADEUS_API_KEY = os.getenv('AMADEUS_API_KEY')
 AMADEUS_API_SECRET = os.getenv('AMADEUS_API_SECRET')
-
+AMADEUS_API_V2_ROOT_URL = os.getenv('AMADEUS_API_V2_ROOT_URL')
+AMADEUS_API_V1_ROOT_URL = os.getenv('AMADEUS_API_V1_ROOT_URL')
+AMADEUS_TOKEN_URL = os.getenv('AMADEUS_TOKEN_URL')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -95,6 +97,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
 
 
 # Database
