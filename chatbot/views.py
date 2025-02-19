@@ -127,7 +127,7 @@ def search_hotels_by_city(request):
 
     # Call the Amadeus hotel search endpoint
     hotel_response = requests.get(
-        amadeus_api_v1_root_url + "/reference-data/locations/hotels/by-city",
+        amadeus_api_v1_root_url + "reference-data/locations/hotels/by-city",
         headers={
             "Authorization": f"Bearer {access_token}"
         },
@@ -137,5 +137,46 @@ def search_hotels_by_city(request):
     # Throw error if unable to fetch hotel offers
     if hotel_response.status_code != 200:
         return Response({"error": "Error fetching hotel offers", "details": hotel_response.json()}, status=hotel_response.status_code)
+
+    return Response(hotel_response.json())
+
+@api_view(['GET'])
+def search_hotels_by_geo(request):
+    """
+    Endpoint to search for hotels in a city using the Amadeus API.
+    
+    This function:
+    - Retrieves the necessary query parameters from the request.
+    - Obtains an access token either from the cache or by requesting a new one.
+    - Calls the Amadeus hotel search endpoint using the provided parameters.
+    - Returns a JSON response with hotel offers or an error message
+    
+    """
+    access_token = get_amadeus_access_token()
+    amadeus_api_v1_root_url = settings.AMADEUS_API_V1_ROOT_URL
+    
+    # Build parameters for hotel search
+    params = {
+        "latitude": request.GET.get('latitude'),
+        'longitude': request.GET.get('longitude'),
+        'radius': request.GET.get('radius', 5),  # defaults to 5km if not specified
+        'ratings': request.GET.get('ratings', '4')  # defaults to 4 and 5 star hotels if not specified
+    }
+
+    api_url = amadeus_api_v1_root_url + "reference-data/locations/hotels/by-geocode"
+    print(api_url)
+
+    # Call the Amadeus hotel search endpoint
+    hotel_response = requests.get(
+        api_url,
+        headers={
+            "Authorization": f"Bearer {access_token}"
+        },
+        params=params
+    )
+
+    # Throw error if unable to fetch hotel offers
+    if hotel_response.status_code != 200:
+        return Response({"error": "Error fetching hotel by geo offers", "details": hotel_response.json()}, status=hotel_response.status_code)
 
     return Response(hotel_response.json())
