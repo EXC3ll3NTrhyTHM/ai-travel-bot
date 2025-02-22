@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from chatbot.views import UserPreferenceListCreateView, ItineraryListCreateView
+from chatbot.views import UserPreferenceListCreateView, ItineraryListCreateView, ChatbotView
 from chatbot.services.travel_api import \
     search_hotels_by_city, \
     search_flights, \
@@ -13,4 +13,5 @@ urlpatterns = [
     path('api/search-flights/', search_flights, name='search-flights'),
     path('api/search-hotels-by-city/', search_hotels_by_city, name='search-hotels-by-city'),
     path('api/search-hotels-by-geo/', search_hotels_by_geo, name='search-hotels-by-geo'),
+    path('api/chatbot/', ChatbotView.as_view(), name='chatbot'),
 ]
