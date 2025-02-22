@@ -1,0 +1,13 @@
+<div class="chat-container">
+    <div *ngFor="let msg of messages" [class.user]="msg.sender === 'User'" class="message">
+      {{ msg.text }}
+    </div>
+    <form [formGroup]="chatbotForm" (submit)="sendMessage()" class="comment-form">
+        <div class="comment-box" [class.expanded]="isExpanded">
+            <textarea class="comment-input" id="content" formControlName="content" name="content" placeholder="Ask TravelBob..."></textarea>
+            <button type="submit" class="respond-btn" [disabled]="!chatbotForm.get('content')?.value?.trim()">
+                Respond
+            </button>
+        </div>
+    </form>
+</div>

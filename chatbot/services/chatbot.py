@@ -6,13 +6,10 @@ class ChatbotService:
     model = None
     
     def __init__(self):
+        self.chat_history = ""
 
         # model_name = "microsoft/DialoGPT-medium"
-        # 7 billion parameter model. Maybe you could replace with deepseek-ai/DeepSeek-R1 which is a 685B param model 
-        # but downloading this model would require better internet than I have and probably like a whole 1tb of space
-        # (this mistral model is 32gb), also a better GPU than I have and possibly still multiple GPUs. 
-        # mistral model is sufficient.
-        model_name = "mistralai/Mistral-7B-Instruct-v0.1"
+        model_name = "mistralai/Mistral-7B-Instruct-v0.2"
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         quantization_config = BitsAndBytesConfig(
@@ -31,11 +28,13 @@ class ChatbotService:
 
 
     def chat_with_mistral(self, user_input):
+        if self.chat_history:
+            prompt = f"{self.chat_history}\nUser: {user_input}\nTravelBot:"
+        else:
+            prompt = f"User: {user_input}\nTravelBot:"
 
         # response = self.model(user_input)
         print(f"User: {user_input}")
-        
-        prompt = f"User: {user_input}\nTravelBot:"
         
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
         
@@ -50,5 +49,6 @@ class ChatbotService:
         response = self.tokenizer.decode(output[0], skip_special_tokens=True)
         bot_response = response.split("TravelBot:")[-1].strip()
 
+        self.chat_history += f"\nUser: {user_input}\nTravelBot: {bot_response}"
         
         return bot_response
