@@ -17,7 +17,7 @@
 
 .user {
     align-self: flex-end;
-    background-color: #007aff;
+    background-color: var(--accent-clr);
     color: white;
     border-bottom-right-radius: 4px;
 }

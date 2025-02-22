@@ -28,13 +28,15 @@ class ChatbotService:
 
 
     def chat_with_mistral(self, user_input):
+
         if self.chat_history:
             prompt = f"{self.chat_history}\nUser: {user_input}\nTravelBot:"
         else:
             prompt = f"User: {user_input}\nTravelBot:"
 
         # response = self.model(user_input)
-        print(f"User: {user_input}")
+
+        print("Thinking...")
         
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
         
@@ -47,6 +49,7 @@ class ChatbotService:
             top_p=0.92,
         )
         response = self.tokenizer.decode(output[0], skip_special_tokens=True)
+        print(response)
         bot_response = response.split("TravelBot:")[-1].strip()
 
         self.chat_history += f"\nUser: {user_input}\nTravelBot: {bot_response}"

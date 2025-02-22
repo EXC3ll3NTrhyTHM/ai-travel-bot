@@ -24,12 +24,13 @@ export class ChatbotComponent {
   constructor(
     private chatbotService: ChatbotService,
     private fb: FormBuilder,
-  ) {}
+  ) {
+    this.initializeForm();
+  }
 
   initializeForm(): void {
     this.chatbotForm = this.fb.group({
       content: ['', [Validators.required]],
-      // author: ['', [Validators.required]],
     });
     // if (this.currentUser.user_id) {
     //   const userId = this.currentUser.user_id;
@@ -51,6 +52,8 @@ export class ChatbotComponent {
   }
 
   sendMessage() {
+    this.userInput = this.chatbotForm.get('content')?.value;
+    console.log('User input:', this.userInput);
     if (this.userInput.trim()) {
       this.messages.push({ text: this.userInput, sender: 'User' });
 

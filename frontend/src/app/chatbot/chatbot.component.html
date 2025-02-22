@@ -1,5 +1,5 @@
 <div class="chat-container">
-    <div *ngFor="let msg of messages" [class.user]="msg.sender === 'User'" class="message">
+    <div *ngFor="let msg of messages" [class.user]="msg.sender === 'User'" [class.bot]="msg.sender === 'Bot'" class="message">
       {{ msg.text }}
     </div>
     <form [formGroup]="chatbotForm" (submit)="sendMessage()" class="comment-form">
