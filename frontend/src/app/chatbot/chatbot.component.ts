@@ -56,9 +56,11 @@ export class ChatbotComponent {
     console.log('User input:', this.userInput);
     if (this.userInput.trim()) {
       this.messages.push({ text: this.userInput, sender: 'User' });
+      const botMessage = { text: '', sender: 'Bot' };
+      this.messages.push(botMessage);
 
-      this.chatbotService.chatWithBot(this.userInput).subscribe((response: { response: any; }) => {
-        this.messages.push({ text: response.response, sender: 'Bot' });
+      this.chatbotService.chatWithBotStreaming(this.userInput, (word: string) => {
+        botMessage.text += word;
       });
 
       this.userInput = '';

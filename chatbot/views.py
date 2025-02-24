@@ -24,4 +24,4 @@ class ChatbotView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         user_input = request.data.get('user-input')
         result = chatbot_service.chat_with_mistral(user_input)
-        return Response({"response": result})
+        return result

@@ -1,17 +1,31 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatbotService {
+  private apiUrl = 'http://localhost:8000/api/chatbot/';
 
-  constructor(private http: HttpClient) { }
+  constructor() {}
 
-  chatWithBot(userInput: string): Observable<{ response: any }> {
-    console.log('User input:', userInput);
-    const url = 'http://localhost:8000/api/chatbot/';
-    return this.http.post<{ response: any }>(url, { 'user-input': userInput });
+  async chatWithBotStreaming(userInput: string, callback: (token: string) => void) {
+    const response = await fetch(this.apiUrl, {
+      method: 'POST',
+      body: JSON.stringify({ 'user-input': userInput }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const reader = response.body?.getReader();
+    if (!reader) return;
+
+    const decoder = new TextDecoder();
+    let result = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      result += decoder.decode(value, { stream: true });
+      callback(result); // Update UI as tokens arrive
+    }
   }
 }
