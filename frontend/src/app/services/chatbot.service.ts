@@ -24,8 +24,8 @@ export class ChatbotService {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      result += decoder.decode(value, { stream: true });
-      callback(result); // Update UI as tokens arrive
-    }
+      const newToken = decoder.decode(value, { stream: true });
+      callback(newToken);
+  }
   }
 }
