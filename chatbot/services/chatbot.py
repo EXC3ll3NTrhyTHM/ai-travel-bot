@@ -27,25 +27,27 @@ class ChatbotService:
         
     def initialize_model(self, model_name):
 
-        # template = """<s>[INST] Give one answer and only generate the AI's response. Do not include the Human's input or the AI's name in the response.
-        # Human: {input} 
-        # AI: [/INST]"""
+        template = """<s>[INST] Give one answer and only generate the AI's response. Do not include the Human's input or the AI's name in the response.
+        {chat_history}
 
-        template = """<s>[INST] Answer the question by first giving a human readible answer. First if the human does not ask above traveling then just respond politely. Next if the question is travel related extract the important entities from the generated response. First extract all locations, then extract all airports, then extract specific activities and finally extract the dates. If these entities don't exist do not include formatted object in the response.
+        Human: {input} 
+        AI: [/INST]"""
 
-            Desired format:
-            [obj]
-            Locations: <comma_separated_list_of_locations>
-            Airports: <comma_separated_list_of_airports>
-            Activities: <comma_separated_list_of_activities>
-            Dates: <comma_separated_list_of_dates>
-            [/obj]
+        # template = """<s>[INST] First if the human does not ask about traveling then just respond politely. If they do ask about traveling answer the question by first giving a conversational answer. Next extract the important entities from the generated response and place them in the travel object. Extract all locations, then extract all airports, then extract specific activities and finally extract the dates.
 
-            {chat_history}
+        #     Desired format of travel object:
+        #     [travel-obj]
+        #     Locations: <comma_separated_list_of_locations>
+        #     Airports: <comma_separated_list_of_airports>
+        #     Activities: <comma_separated_list_of_activities>
+        #     Dates: <comma_separated_list_of_dates>
+        #     [/travel-obj]
 
-            Human: {input}[/INST]
+        #     {chat_history}
 
-        """
+        #     Human: {input}[/INST]
+
+        # """
 
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -102,8 +104,8 @@ class ChatbotService:
                 yield token + " "
                 time.sleep(0.1)  # Simulating streaming delay
 
-        self.memory.chat_memory.add_user_message(user_input)
-        self.memory.chat_memory.add_ai_message(bot_response)
+        # self.memory.chat_memory.add_user_message(user_input)
+        # self.memory.chat_memory.add_ai_message(bot_response)
 
         print(bot_response)
 
