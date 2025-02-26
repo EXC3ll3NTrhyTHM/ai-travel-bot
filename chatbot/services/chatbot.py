@@ -7,6 +7,8 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 from langchain.llms import HuggingFacePipeline
 from langchain.prompts import PromptTemplate
+from langchain.memory.chat_message_histories import ChatMessageHistory
+from langchain.schema import HumanMessage, AIMessage
 
 
 class ChatbotService:
@@ -25,12 +27,25 @@ class ChatbotService:
         
     def initialize_model(self, model_name):
 
-        template = """<s>[INST] Give one answer and only generate the AI's response. Do not include the Human's input or the AI's name in the response.
-        
-        Current conversation:
-        {chat_history}
-        Human: {input}
-        AI: [/INST]"""
+        # template = """<s>[INST] Give one answer and only generate the AI's response. Do not include the Human's input or the AI's name in the response.
+        # Human: {input} 
+        # AI: [/INST]"""
+
+        template = """<s>[INST] Answer the question by first giving a human readible answer. First if the human does not ask above traveling then just respond politely. Next if the question is travel related extract the important entities from the generated response. First extract all locations, then extract all airports, then extract specific activities and finally extract the dates. If these entities don't exist do not include formatted object in the response.
+
+            Desired format:
+            [obj]
+            Locations: <comma_separated_list_of_locations>
+            Airports: <comma_separated_list_of_airports>
+            Activities: <comma_separated_list_of_activities>
+            Dates: <comma_separated_list_of_dates>
+            [/obj]
+
+            {chat_history}
+
+            Human: {input}[/INST]
+
+        """
 
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -58,17 +73,18 @@ class ChatbotService:
             temperature=0.6,
             top_p=0.9,
             do_sample=True,
-            # Add other parameters as needed
         )
 
         llm = HuggingFacePipeline(pipeline=pipe)
 
+        message_history = ChatMessageHistory()
+
         self.memory = ConversationBufferMemory(
              memory_key="chat_history", 
+             chat_memory=message_history,
              return_messages=True)
-        
-        prompt = PromptTemplate(input_variables=["chat_history", "input"], template=template)
 
+        prompt = PromptTemplate(input_variables=["chat_history", "input"], template=template)
         
         self.conversation = ConversationChain(
             llm=llm,
@@ -77,18 +93,18 @@ class ChatbotService:
             verbose=True
         )
 
-        # response = conversation.predict(input="Hello, how are you?")
-        # print(response)
-        
     def chat_with_mistral(self, user_input):
         response = self.conversation.predict(input=user_input)
-        bot_response = response.split("AI: [/INST]")[-1].strip()
+        bot_response = response.split("[/INST]")[-1].strip()
 
         def generate_response():
             for token in bot_response.split():
                 yield token + " "
                 time.sleep(0.1)  # Simulating streaming delay
-        
+
+        self.memory.chat_memory.add_user_message(user_input)
+        self.memory.chat_memory.add_ai_message(bot_response)
+
         print(bot_response)
 
         return StreamingHttpResponse(generate_response(), content_type="text/plain")
