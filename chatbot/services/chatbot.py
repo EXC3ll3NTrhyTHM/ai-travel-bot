@@ -3,6 +3,10 @@ import torch
 import time
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
+from langchain.llms import HuggingFacePipeline
+from langchain.prompts import PromptTemplate
 
 
 class ChatbotService:
@@ -20,12 +24,22 @@ class ChatbotService:
 
         
     def initialize_model(self, model_name):
+
+        template = """<s>[INST] Give one answer and only generate the AI's response. Do not include the Human's input or the AI's name in the response.
+        
+        Current conversation:
+        {chat_history}
+        Human: {input}
+        AI: [/INST]"""
+
+
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_compute_dtype=torch.bfloat16,  # or torch.bfloat16 if preferred
-            bnb_4bit_use_double_quant=False,
+            bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",  # or "fp4" depending on your needs
+            llm_int8_enable_fp32_cpu_offload=True
         )
 
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -35,7 +49,34 @@ class ChatbotService:
             quantization_config=quantization_config,
         )
 
-        self.chat_history = ""
+        pipe = pipeline(
+            "text-generation",
+            model=self.model,
+            tokenizer=self.tokenizer,
+            max_new_tokens=512,
+            temperature=0.6,
+            top_p=0.9,
+            # Add other parameters as needed
+        )
+
+        llm = HuggingFacePipeline(pipeline=pipe)
+
+        self.memory = ConversationBufferMemory(
+             memory_key="chat_history", 
+             return_messages=True)
+        
+        prompt = PromptTemplate(input_variables=["chat_history", "input"], template=template)
+
+        
+        conversation = ConversationChain(
+            llm=llm,
+            memory=self.memory,
+            prompt=prompt,
+            verbose=True
+        )
+
+        response = conversation.predict(input="Hello, how are you?")
+        print(response)
         
     def chat_with_mistral(self, user_input):
         systemPrompt = "You are a travel assistant. Please be concise and don't repeat yourself."
