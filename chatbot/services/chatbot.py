@@ -53,9 +53,11 @@ class ChatbotService:
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
+            pad_token_id=self.tokenizer.eos_token_id,
             max_new_tokens=512,
             temperature=0.6,
             top_p=0.9,
+            do_sample=True,
             # Add other parameters as needed
         )
 
@@ -68,46 +70,25 @@ class ChatbotService:
         prompt = PromptTemplate(input_variables=["chat_history", "input"], template=template)
 
         
-        conversation = ConversationChain(
+        self.conversation = ConversationChain(
             llm=llm,
             memory=self.memory,
             prompt=prompt,
             verbose=True
         )
 
-        response = conversation.predict(input="Hello, how are you?")
-        print(response)
+        # response = conversation.predict(input="Hello, how are you?")
+        # print(response)
         
     def chat_with_mistral(self, user_input):
-        systemPrompt = "You are a travel assistant. Please be concise and don't repeat yourself."
-        if self.chat_history:
-            prompt = f"{systemPrompt}\n\n{self.chat_history}\nUser: {user_input}\nTravelBot:"
-        else:
-            prompt = f"{systemPrompt}\n\nUser: {user_input}\nTravelBot:"
+        response = self.conversation.predict(input=user_input)
+        bot_response = response.split("AI: [/INST]")[-1].strip()
 
-        print(prompt)
-
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-
-        print(inputs)
-
-        return StreamingHttpResponse(self.generate_response(inputs, user_input), content_type="text/plain")
-    
-    def generate_response(self, inputs, user_input):
-            outputs = self.model.generate(
-                inputs.input_ids,
-                attention_mask=inputs.attention_mask,
-                pad_token_id=self.tokenizer.eos_token_id,
-                max_new_tokens=1000,
-                return_dict_in_generate=True
-            )
-
-            decoded_text = self.tokenizer.decode(outputs.sequences[0], skip_special_tokens=True)
-            bot_response = decoded_text.split("TravelBot:")[-1].strip()
-
+        def generate_response():
             for token in bot_response.split():
                 yield token + " "
                 time.sleep(0.1)  # Simulating streaming delay
+        
+        print(bot_response)
 
-            # self.chat_history += f"\nUser: {user_input}\nTravelBot: {bot_response}"
-            print(self.chat_history)
+        return StreamingHttpResponse(generate_response(), content_type="text/plain")
